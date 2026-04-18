@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<input type="file" id="file">
+<button onclick="run()">Start</button>
+
+<pre id="output"></pre>
+
+<script src="https://cdn.jsdelivr.net/npm/vosk-browser@0.0.5/dist/vosk.js"></script>
+
+<script>
+async function run() {
+  const file = document.getElementById("file").files[0];
+  const output = document.getElementById("output");
+
+  const model = await Vosk.createModel("model.tar.gz");
+
+  const audioCtx = new AudioContext();
+  const recognizer = await Vosk.createRecognizer(model, audioCtx.sampleRate);
+
+  recognizer.onresult = (msg) => {
+    output.innerText += msg.result.text + "\n";
+  };
+
+  const arrayBuffer = await file.arrayBuffer();
+  const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+
+  const channelData = audioBuffer.getChannelData(0);
+
+  recognizer.acceptWaveform(channelData);
+}
+</script>
+
+</body>
+</html>
